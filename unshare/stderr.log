@@ -1,0 +1,67 @@
+bess
+Prosess 7296 er knyttet til port 80.
+html - test
+Loggpunkt
+text/html
+test.html
+
+css - stiler
+Loggpunkt
+text/css
+stiler.css
+
+js - serviceArbeider
+Loggpunkt
+application/javascript
+serviceArbeider.js
+
+html - index
+Loggpunkt
+text/html
+index.html
+
+css - stiler
+Loggpunkt
+text/css
+stiler.css
+
+ico - favicon
+Loggpunkt
+image/vnd.microsoft.icon
+favicon.ico
+
+html - test
+Loggpunkt
+text/html
+test.html
+
+png - Capture
+Loggpunkt
+image/png
+Capture.png
+
+js - serviceArbeider
+Loggpunkt
+application/javascript
+serviceArbeider.js
+
+js - serviceArbeider
+Loggpunkt
+application/javascript
+serviceArbeider.js
+
+js - serviceArbeider
+Loggpunkt
+application/javascript
+serviceArbeider.js
+
+js - serviceArbeider
+Loggpunkt
+application/javascript
+serviceArbeider.js
+
+js - serviceArbeider
+Loggpunkt
+application/javascript
+serviceArbeider.js
+

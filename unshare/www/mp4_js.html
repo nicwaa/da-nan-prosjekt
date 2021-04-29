@@ -1,0 +1,207 @@
+<!doctype html>
+
+<html>
+	<head>
+		<link href="http://localhost/stiler.css" rel="stylesheet" type="text/css" />
+		<meta content="HTML,CSS,XML,JavaScript"; charset="utf-8">
+		<title>js_WebUI</title>
+	</head>
+	<body onload=serviceWorkerSjekk() >
+		<h2><a href="http://localhost/index.html">Hjemmeside</a></h2>
+		<h1>Javascript webUI</h1>
+
+		<div id='login_logout'></div><br>
+		
+		<button onclick = 'hentDikt()'>Hent alle dikt</button><br>
+		<label for="diktID">diktID:</label><br>
+        <input type=number id=diktID name=diktID value='Angi diktID'><br>
+		<button onclick = "hentDikt(document.getElementById('diktID').value)">Hent dikt</button><br><br>
+
+		<div id='authenticated'></div><br>
+		
+		<div id='dikt'></div>
+
+		<ul>
+			<li><a href='./index.html'>p1</a></li>
+		</ul>
+		
+		<script type="text/javascript">
+			if(document.cookie.length > 0){
+				sessionCheck().then(
+					res => {
+						session_cookie = res.split("\|")[0]
+						session_email = res.split("\|")[1]
+					}
+				)
+			} else {
+				render();
+			}
+			
+			async function login(username,password){
+				username = username || '';
+				password = password || '';
+				const body = 	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\
+    							<bruker xmlns=\"http://localhost/\"\
+        						xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\
+        						xsi:schemaLocation=\"http://localhost/ xml_schema.xsd\">\
+    								<email>"+username+"</email>\
+									<passord>"+password+"</passord>\
+								</bruker>";
+				const response = await fetch('http://localhost:8181/login/', {
+					method: 'POST',
+					Origin: 'http://localhost',
+					body: body
+				});
+				const sesjon = await response.text();
+
+				if(sesjon.length > 0){
+					var temp  = sesjon;
+					temp = temp.slice(0,-1);
+					var my_cookie = "sessionID="+temp+";";
+					var my_attributes = " Max-Age=600; SameSite=Lax";
+					document.cookie = my_cookie+my_attributes;
+					render(sesjon);
+				}
+			}
+			
+			async function sessionCheck(){
+				const response = await fetch('http://localhost:8181/session/fetch', {
+					method: 'GET',
+					Origin: 'http://localhost',
+					credentials: "include"
+				});
+				const session = await response.text();
+				if (session.length > 0)
+					render(session);
+				return session 
+			}
+		
+			function render(cookieCheck){
+				cookieCheck = cookieCheck || ''
+				if ( cookieCheck.length == 0 ){
+					document.getElementById("login_logout").innerHTML =
+						"<label for='un'>Epost:</label><br>\
+						<input type='email' id='un' name='epost' value='test@testen.no'><br>\
+						<label for='pw'>Passord:</label><br>\
+						<input type='password' id='pw' name='passord'><br>\
+						<button onclick = \"login(document.getElementById('un').value,document.getElementById('pw').value)\">Login</button><br>"
+						document.getElementById("authenticated").innerHTML = ""
+				}
+				else{
+					document.getElementById("login_logout").innerHTML =
+						"<button onclick = \"logout()\">Logout</button><br>";
+					document.getElementById("authenticated").innerHTML =
+						"<div id='nytt_dikt'>\
+							<label for='Post_dikt'>Skap et nytt dikt:</label><br>\
+                        	<input type=text id='post_dikt' name='lagre_nytt_dikt' value='Skriv inn ditt dikt her'><br>\
+							<button onclick = \"postDikt(document.getElementById('post_dikt').value)\">Lagre dikt</button><br>\
+						</div><br>\
+						<div id='endre_dikt'>\
+							<p>Revider eksisterende dikt:</p>\
+							<label for='put_dikt'>Dikt ID:</label><br>\
+                        	<input type=number id='endre_dikt_id' name='endre_dikt_id'><br>\
+							<input type=text id='endre_dikt_tekst' name='endre_dikt_tekst'><br>\
+							<button onclick = \"endreDikt(document.getElementById('endre_dikt_id').value,\
+								document.getElementById('endre_dikt_tekst').value)\">Endre dikt</button><br>\
+						</div><br>\
+						<div id='slett_dikt'>\
+							<p>Slett dikt:</p>\
+                        	<label for='slett_dikt_id'>Dikt ID:</label><br>\
+                        	<input type=number id='slett_dikt_id' name='slett_dikt_id'><br>\
+                        	<button onclick = \"slettDikt(document.getElementById('slett_dikt_id').value)\">Slett dikt</button><br>\
+						</div><br>\
+						<div id='slett_alle_dikt'>\
+                        	<button onclick = \"slettDikt()\">Slett alle dikt</button><br>\
+						</div>"
+				}
+
+			}
+
+			function hentDikt(id){
+				id = id || ''
+				fetch('http://localhost:8181/dikt/'+id, {
+					method: 'GET',
+					Origin: 'http://localhost'
+				})	
+					.then(result => result.text())
+					.then(data => {
+						const parser = new window.DOMParser();
+						const xml = parser.parseFromString(data, "text/xml")
+						const count = xml.getElementsByTagName("dikt").length
+						document.getElementById("dikt").innerHTML =
+							"<table id='test'></table>"
+						for (var i = 0; i < count; i++){
+							const id = xml.getElementsByTagName("id")[i].childNodes[0].nodeValue;
+							const tekst = xml.getElementsByTagName("tekst")[i].childNodes[0].nodeValue;
+							document.getElementById("test").innerHTML += 
+								"<tr>\
+									<td>"+id+"</td>\
+									<td>"+tekst+"</td>\
+								</tr>"
+						}
+						console.log(xml.getElementsByTagName("dikt").length)
+					});
+			}
+			async function logout(){
+				await fetch('http://localhost:8181/login/logout', {
+					method: 'DELETE',
+					Origin: 'http://localhost',
+					credentials: "include"
+				})
+				render();
+			}
+			async function postDikt(tekst){
+				const body = 	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\
+								<api xmlns=\"http://localhost/\"\
+								xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\
+								xsi:schemaLocation=\"http://localhost/ xml_schema.xsd\">\
+									<dikt>\
+										<tekst>"+tekst+"</tekst>\
+									</dikt>\
+								</api>";
+
+				await fetch('http://localhost:8181/dikt/', {
+					method: 'POST',
+					Origin: 'http://localhost',
+					credentials: "include",
+					body: body
+				})
+			}
+			async function endreDikt(id, tekst){
+				const body = 	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\
+								<api xmlns=\"http://localhost/\"\
+								xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\
+								xsi:schemaLocation=\"http://localhost/ xml_schema.xsd\">\
+									<dikt>\
+										<tekst>"+tekst+"</tekst>\
+									</dikt>\
+								</api>"
+
+				await fetch('http://localhost:8181/dikt/'+id, {
+					method: 'PUT',
+					Origin: 'http://localhost',
+					credentials: "include",
+					body: body
+				})
+			}
+			async function slettDikt(id){
+				id = id || '';
+				await fetch('http://localhost:8181/dikt/'+id, {
+					method: 'DELETE',
+					Origin: 'http://localhost',
+					credentials: "include"
+				})	
+			}
+			function serviceWorkerSjekk() {
+        		if( !('serviceWorker' in navigator) ) {
+					alert ('"ServiceWorker" er ikke støttet');
+				} else {
+					navigator.serviceWorker
+						.register('./serviceArbeider.js')
+						.then(reg => console.log('Registration succeeded. Scope is ' + reg.scope))
+						.catch(err => alert(`Installasjon feilet: \n\n ${err}`))
+        		}
+      		}
+		</script>
+	</body>
+</html>

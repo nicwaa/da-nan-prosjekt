@@ -1,0 +1,22 @@
+.kont {
+    height: auto;
+    width: auto;
+}
+
+.image-dog {
+    width: 600px;
+    height: 600px;
+    border-radius:50%;
+    overflow:hidden;
+}
+
+.list-container {
+    list-style-type: circle;
+    border-style: solid;
+    border-color: black;
+    width: 600px;
+}
+
+h1 {
+    color: blueviolet;
+}

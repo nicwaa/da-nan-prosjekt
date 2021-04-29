@@ -1,0 +1,11 @@
+200 OK
+Content-Type:text/html;charset=utf-8
+Content-Length: 82 
+
+<html>
+	<head>
+	</head>
+	<body>
+		<h1>Dette er en .asis-fil</h1>
+	</body>
+</html>

@@ -1,0 +1,3 @@
+Steg 1: Stopp docker-demonen med følgende kommando: "sudo systemctl stop docker"
+
+Steg 2: Start docker-demonen med namespace-opsjonen: "sudo dockerd --userns-remap=default &"
